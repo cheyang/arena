@@ -19,7 +19,7 @@ set +e
 
 if [ "$useLoadBlancer" == "true" ]; then
 	find /charts/ -name *.yaml | xargs sed -i "s/NodePort/LoadBalancer/g"
-	find /root/kubernetes-artifacts/ -name *.yaml | xargs sed -i "s/NodePort/LoadBalancer/g"
+	# find /root/kubernetes-artifacts/ -name *.yaml | xargs sed -i "s/NodePort/LoadBalancer/g"
 fi
 
 
