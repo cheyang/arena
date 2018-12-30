@@ -65,9 +65,9 @@ cli:
 
 .PHONY: cli-profile
 cli-profile:
-  mkdir -p bin
-  CGO_ENABLED=1 go build -toolexec="perf record -g -o /tmp/p" -tags 'netgo'  -ldflags '${LDFLAGS}' -o ${DIST_DIR}/${ARENA_CLI_NAME} cmd/arena/*.go
-  CGO_ENABLED=1 go build -toolexec="perf record -g -o /tmp/p" -ldflags '${LDFLAGS}' -o ${DIST_DIR}/${JOB_MONITOR} cmd/job-monitor/*.go
+	mkdir -p bin
+	CGO_ENABLED=1 go build -toolexec="perf record -g -o /tmp/p" -tags 'netgo'  -ldflags '${LDFLAGS}' -o ${DIST_DIR}/${ARENA_CLI_NAME} cmd/arena/*.go
+	CGO_ENABLED=1 go build -toolexec="perf record -g -o /tmp/p" -ldflags '${LDFLAGS}' -o ${DIST_DIR}/${JOB_MONITOR} cmd/job-monitor/*.go
 
 .PHONY: install-image
 install-image:
