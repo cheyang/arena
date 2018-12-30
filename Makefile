@@ -63,6 +63,12 @@ cli:
 	CGO_ENABLED=1 go build -tags 'netgo'  -ldflags '${LDFLAGS}' -o ${DIST_DIR}/${ARENA_CLI_NAME} cmd/arena/*.go
 	CGO_ENABLED=1 go build -ldflags '${LDFLAGS}' -o ${DIST_DIR}/${JOB_MONITOR} cmd/job-monitor/*.go
 
+.PHONY: cli-profile
+cli-profile:
+  mkdir -p bin
+  CGO_ENABLED=1 go build -toolexec="perf record -g -o /tmp/p" -tags 'netgo'  -ldflags '${LDFLAGS}' -o ${DIST_DIR}/${ARENA_CLI_NAME} cmd/arena/*.go
+  CGO_ENABLED=1 go build -toolexec="perf record -g -o /tmp/p" -ldflags '${LDFLAGS}' -o ${DIST_DIR}/${JOB_MONITOR} cmd/job-monitor/*.go
+
 .PHONY: install-image
 install-image:
 	docker build -t cheyang/arena:${VERSION}-${DOCKER_BUILD_DATE}-${GIT_SHORT_COMMIT} -f Dockerfile.install .
