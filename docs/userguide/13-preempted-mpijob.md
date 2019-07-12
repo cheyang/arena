@@ -3,7 +3,7 @@
 
 ## prerequisites
 
-- k8s > 1.11
+- k8s > 1.14
 
 1.Create `PriorityClass` with the yaml below:
 

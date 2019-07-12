@@ -3,7 +3,7 @@
 
 ## 前提条件
 
-- k8s > 1.11
+- k8s > 1.14
 
 1.利用下列yaml创建`PriorityClass`对象，这里定义了两个优先级`critical`和`medium`:
 
