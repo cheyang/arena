@@ -1,0 +1,6 @@
+=== RUN   TestVerify_PR1481_PytorchSingleNodeWithGPU_Validates
+    verify_findings_test.go:35: CONFIRMED BUG: single-node pytorch + --gpus fails validation end-to-end: worker.replicas must be > 0, got 0
+--- FAIL: TestVerify_PR1481_PytorchSingleNodeWithGPU_Validates (0.00s)
+FAIL
+FAIL	github.com/kubeflow/arena/pkg/cli	0.129s
+FAIL

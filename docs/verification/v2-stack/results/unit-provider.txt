@@ -1,0 +1,5 @@
+=== RUN   TestVerify_PR1480_MPILogSelector_CurrentlyUsesReplicaType
+    verify_findings_test.go:33: CONFIRMED current behavior (canary green): MPI log selector = "training.kubeflow.org/job-name=myjob,training.kubeflow.org/replica-type=launcher"; constants.LabelJobRole ("training.kubeflow.org/job-role") is unused in production
+--- PASS: TestVerify_PR1480_MPILogSelector_CurrentlyUsesReplicaType (0.00s)
+PASS
+ok  	github.com/kubeflow/arena/pkg/provider	0.072s

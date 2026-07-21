@@ -1,0 +1,6 @@
+=== RUN   TestVerify_PR1479_ResolveMPIVersion_PreservesSentinel
+    verify_findings_test.go:35: CONFIRMED BUG: ResolveMPIVersion dropped the ErrCRDNotFound sentinel (errors.Is == false); err="MPIJob CRD not found in cluster"
+--- FAIL: TestVerify_PR1479_ResolveMPIVersion_PreservesSentinel (0.00s)
+FAIL
+FAIL	github.com/kubeflow/arena/pkg/client	0.080s
+FAIL

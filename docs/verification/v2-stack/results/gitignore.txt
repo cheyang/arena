@@ -1,0 +1,9 @@
+== .gitignore lines mentioning arena-v2 / bin ==
+2:bin/
+32:arena-v2
+
+== git check-ignore against cmd/arena-v2 source ==
+.gitignore:32:arena-v2	cmd/arena-v2/main.go
+.gitignore:32:arena-v2	cmd/arena-v2
+CONFIRMED: the source path cmd/arena-v2/ is ignored by the unanchored pattern.
+    Fix: anchor the binary rule to '/arena-v2' (bin/arena-v2 is already covered by bin/).

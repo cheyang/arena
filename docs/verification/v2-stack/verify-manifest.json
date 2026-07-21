@@ -1,0 +1,128 @@
+{
+  "topic": "v2-stack",
+  "pr": "https://github.com/kubeflow/arena/pull/1483",
+  "series": "stacked PRs by vicoooo26; each PR's true scope is the prev..this increment",
+  "prs": [
+    { "num": 1477, "head": "41dadd7ca983f9b97b03ee0a1fb1e9d501248b9d", "range": "develop-v2..pr-1477", "title": "v2-1 kep/Makefile/gitignore scaffolding" },
+    { "num": 1478, "head": "442b24336e77701f1598b342fbc09ea1d4f542ef", "range": "pr-1477..pr-1478", "title": "v2-2 core data model, constants, logging" },
+    { "num": 1479, "head": "0d94667c3ccc22e6c3ea440c1da31ea2afcaeab2", "range": "pr-1478..pr-1479", "title": "v2-3 k8s client + CRD version detection" },
+    { "num": 1480, "head": "8d16b2d40d0a9a5137830d7078f3e42c97770700", "range": "pr-1479..pr-1480", "title": "v2-4 MPI/PyTorch/TF providers" },
+    { "num": 1481, "head": "1b708d29b656c2e37f030465ce7342a1a5b4c449", "range": "pr-1480..pr-1481", "title": "v2-5 CLI core: submit/query/output" },
+    { "num": 1482, "head": "ce53d257b3ac6094f10394a8d277bc6387dd930c", "range": "pr-1481..pr-1482", "title": "v2-6 CLI extended: lifecycle/observation" },
+    { "num": 1483, "head": "e3af5509665d5e529c94f7d709ab1e7213d20075", "range": "pr-1482..pr-1483", "title": "v2-7 examples + e2e tests" }
+  ],
+  "note": "Harness built at the stack tip (pr-1483) so all cumulative code is reachable in one tree. Production code untouched; deliverable is additive test files + scripts + docs.",
+  "findings": [
+    {
+      "id": "PR1482-F1-set-arrays",
+      "pr": 1482,
+      "severity": "blocker",
+      "layer": "unit",
+      "polarity": "contract",
+      "claim": "Hand-rolled --set parser (replacing helm strvals) drops values for intermediate array indices and panics on nested array indices.",
+      "tests": [
+        "pkg/task -run TestVerify_PR1482_SetIntermediateArray_RoundTrips",
+        "pkg/task -run TestVerify_PR1482_SetNestedArray_NoPanic"
+      ],
+      "biteChecked": false,
+      "proposedFix": "In setValueAtPath, persist grown slices back into their parent at every level (closure-based set-back), not only for the last segment.",
+      "observed": "storages[0].name=data -> storages=[] (dropped); matrix[0][1]=x -> panic: index out of range [0] with length 0"
+    },
+    {
+      "id": "PR1481-F1-pytorch-gpu-validate",
+      "pr": 1481,
+      "severity": "high",
+      "layer": "unit",
+      "polarity": "contract",
+      "claim": "Single-node PyTorch submit that requests GPUs fails validation: master-only nils Worker, then ApplyOverrides.ensureWorker() resurrects Worker{Replicas:0}.",
+      "tests": ["pkg/cli -run TestVerify_PR1481_PytorchSingleNodeWithGPU_Validates"],
+      "biteChecked": true,
+      "proposedFix": "Make single-node PyTorch keep master-only semantics through overrides (route resource flags to Master when Worker is nil), or have ensureWorker default Replicas=1. Add an end-to-end submit->override->validate test.",
+      "observed": "worker.replicas must be > 0, got 0"
+    },
+    {
+      "id": "PR1479-F1-sentinel",
+      "pr": 1479,
+      "severity": "medium",
+      "layer": "unit",
+      "polarity": "contract",
+      "claim": "ResolveMPIVersion re-wraps ErrCRDNotFound as a bare string, so errors.Is(err, ErrCRDNotFound) is false at the layer callers use to distinguish 'operator not installed'.",
+      "tests": ["pkg/client -run TestVerify_PR1479_ResolveMPIVersion_PreservesSentinel"],
+      "biteChecked": true,
+      "proposedFix": "return fmt.Errorf(\"MPIJob CRD not found in cluster: %w\", ErrCRDNotFound)",
+      "observed": "errors.Is == false; err=\"MPIJob CRD not found in cluster\""
+    },
+    {
+      "id": "PR1480-mpi-log-selector",
+      "pr": 1480,
+      "severity": "high-unconfirmed",
+      "layer": "unit+static",
+      "polarity": "canary",
+      "claim": "MPIProvider.GetLogPodSelector uses training.kubeflow.org/replica-type=launcher; the standalone mpi-operator (v2beta1) labels pods with training.kubeflow.org/job-role. The same PR defines constants.LabelJobRole but never uses it.",
+      "tests": ["pkg/provider -run TestVerify_PR1480_MPILogSelector_CurrentlyUsesReplicaType"],
+      "biteChecked": false,
+      "requiresConfirmation": "Confirm the deployed mpi-operator's pod label (job-role vs replica-type) for the MPIJob apiVersion arena targets. If job-role: invert this canary to a contract test and switch the selector.",
+      "observed": "selector = training.kubeflow.org/job-name=myjob,training.kubeflow.org/replica-type=launcher; LabelJobRole unused in production"
+    },
+    {
+      "id": "PR1478-F2-tensorboard-false",
+      "pr": 1478,
+      "severity": "low-latent",
+      "layer": "unit",
+      "polarity": "contract",
+      "claim": "ApplyOverrides with tensorboard=false materializes a non-nil TensorBoardConfig{Enabled:false}. NOT reachable via current CLI (buildSubmitFlags omits the key when false); API-level footgun only.",
+      "tests": ["pkg/task -run TestVerify_PR1478_TensorboardFalse_StaysNil"],
+      "biteChecked": false,
+      "proposedFix": "Only allocate TensorBoardConfig when enabling (v==true) or when logdir/image present.",
+      "observed": "Logging.TensorBoard != nil after tensorboard=false"
+    },
+    {
+      "id": "PR1478-F5-priority-guard",
+      "pr": 1478,
+      "severity": "low-latent",
+      "layer": "unit",
+      "polarity": "contract",
+      "claim": "setInt guard (n>0) prevents overriding priority to 0 or negative; k8s priority is signed. Also CLI-gated today.",
+      "tests": ["pkg/task -run TestVerify_PR1478_PriorityNegative_Applies"],
+      "biteChecked": false,
+      "proposedFix": "Track flag-changed explicitly (cobra Changed) instead of value>0 heuristics, at least for signed fields like priority.",
+      "observed": "priority stays 50 after override to -100"
+    },
+    {
+      "id": "PR1483-F1-e2e-buildtag",
+      "pr": 1483,
+      "severity": "high",
+      "layer": "static+build",
+      "polarity": "canary",
+      "claim": "e2e suite lacks //go:build v2e2e, so plain `go test ./...` compiles and runs the cluster-dependent suite and hard-fails in BeforeSuite.",
+      "tests": ["scripts/verify-static.sh", "matrix: go test ./... at pr-1483 (results/test-1483 fails only test/e2e)"],
+      "biteChecked": false,
+      "proposedFix": "Add //go:build v2e2e to every file in test/e2e/ (matching the Makefile's -tags v2e2e).",
+      "observed": "12 files under test/e2e lack the tag; `go test ./...` -> FAIL test/e2e BeforeSuite 'CRD directory not found'"
+    },
+    {
+      "id": "PR1482-F2-delete-namespace",
+      "pr": 1482,
+      "severity": "high",
+      "layer": "static",
+      "polarity": "canary",
+      "claim": "`delete -f` resolves namespace as resolveNS(\"\") (drops YAML namespace) while `run` uses resolveNS(t.Namespace) — destructive-op targeting the wrong namespace.",
+      "tests": ["scripts/verify-static.sh"],
+      "biteChecked": false,
+      "proposedFix": "delete.go: ns := resolveNS(t.Namespace) to match run.go.",
+      "observed": "delete.go:44 resolveNS(\"\") vs run.go:90 resolveNS(t.Namespace)"
+    },
+    {
+      "id": "PR1477-F1-gitignore",
+      "pr": 1477,
+      "severity": "medium",
+      "layer": "static",
+      "polarity": "canary",
+      "claim": "Unanchored `arena-v2` .gitignore pattern ignores the cmd/arena-v2/ source directory, not just the built binary.",
+      "tests": ["scripts/verify-gitignore.sh"],
+      "biteChecked": false,
+      "proposedFix": "Anchor to /arena-v2 (bin/arena-v2 is already covered by bin/).",
+      "observed": "git check-ignore matches cmd/arena-v2 and cmd/arena-v2/main.go"
+    }
+  ]
+}

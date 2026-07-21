@@ -1,0 +1,15 @@
+=== RUN   TestVerify_PR1482_SetIntermediateArray_RoundTrips
+    verify_findings_test.go:33: CONFIRMED BUG: intermediate array silently dropped — storages=[]interface {}{} (want 1-elem array)
+--- FAIL: TestVerify_PR1482_SetIntermediateArray_RoundTrips (0.00s)
+=== RUN   TestVerify_PR1482_SetNestedArray_NoPanic
+    verify_findings_test.go:47: CONFIRMED BUG: --set matrix[0][1]=x panicked the process: runtime error: index out of range [0] with length 0
+--- FAIL: TestVerify_PR1482_SetNestedArray_NoPanic (0.00s)
+=== RUN   TestVerify_PR1478_TensorboardFalse_StaysNil
+    verify_findings_test.go:68: CONFIRMED (latent/API-level): tensorboard=false produced non-nil config &task.TensorBoardConfig{Enabled:false, LogDir:"", Image:"", Mounts:[]task.Mount(nil)}
+--- FAIL: TestVerify_PR1478_TensorboardFalse_StaysNil (0.00s)
+=== RUN   TestVerify_PR1478_PriorityNegative_Applies
+    verify_findings_test.go:83: CONFIRMED (latent): priority override to -100 dropped by setInt(n>0) guard — stayed 50
+--- FAIL: TestVerify_PR1478_PriorityNegative_Applies (0.00s)
+FAIL
+FAIL	github.com/kubeflow/arena/pkg/task	0.137s
+FAIL
