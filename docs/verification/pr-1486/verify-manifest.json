@@ -1,0 +1,93 @@
+{
+  "topic": "pr-1486",
+  "pr": "https://github.com/kubeflow/arena/pull/1486",
+  "head": "2c0084fe3c0245e7a2e8ae9138f8882b1852470f",
+  "base": "develop-v2",
+  "note": "PR #1486 (author vicoooo26) combines former #1481+#1482+#1483 and, because its base develop-v2 is the empty init commit, carries the ENTIRE cumulative v2 tree (140 files, ~28k insertions). It is the resubmission of the earlier 7-PR stack (#1477-#1483, all closed) as combined PRs #1484(closed)/#1485(closed)/#1486(open). Findings are seeded from the round-1 review on verify/v2-stack and re-proven against this head. Production code untouched; deliverable is additive test files + this docs dir.",
+  "toolchain": "go 1.26.5 (auto-downloaded; go.mod pins 1.26.5)",
+  "findings": [
+    {
+      "id": "PR1482-F1-set-arrays",
+      "severity": "blocker",
+      "layer": "unit",
+      "polarity": "contract",
+      "status": "FIXED",
+      "claim": "Hand-rolled --set parser dropped intermediate-array values and panicked on nested array indices.",
+      "tests": ["pkg/task -run TestVerify_PR1482_SetIntermediateArray_RoundTrips", "pkg/task -run TestVerify_PR1482_SetNestedArray_NoPanic"],
+      "observed": "PASS: storages[0].name=data -> [{name:data}]; matrix[0][1]=x -> [[nil,\"x\"]] (no panic). setter.go rewritten with updateSliceInParent write-back + maxIndex OOM guard."
+    },
+    {
+      "id": "PR1481-F1-pytorch-gpu-validate",
+      "severity": "high",
+      "layer": "unit",
+      "polarity": "contract",
+      "status": "STILL-BROKEN",
+      "claim": "Single-node PyTorch submit that requests GPUs fails validation: buildSubmitTask nils Worker for --workers<=1, then ApplyOverrides.ensureWorker() resurrects Worker{Replicas:0}.",
+      "tests": ["pkg/cli -run TestVerify_PR1481_PytorchSingleNodeWithGPU_Validates"],
+      "observed": "FAIL: worker.replicas must be > 0, got 0",
+      "proposedFix": "Route resource flags (--gpus/--cpu/--memory) to Master when Worker is nil for single-node pytorch, or default ensureWorker Replicas=1."
+    },
+    {
+      "id": "PR1479-F1-sentinel",
+      "severity": "medium",
+      "layer": "unit",
+      "polarity": "contract",
+      "status": "STILL-BROKEN",
+      "claim": "ResolveMPIVersion re-wraps ErrCRDNotFound as a bare fmt.Errorf without %w (crd.go:72), so errors.Is(err, ErrCRDNotFound) is false at the layer callers use to distinguish 'operator not installed'.",
+      "tests": ["pkg/client -run TestVerify_PR1479_ResolveMPIVersion_PreservesSentinel"],
+      "observed": "FAIL: errors.Is == false; err=\"MPIJob CRD not found in cluster\"",
+      "proposedFix": "return fmt.Errorf(\"MPIJob CRD not found in cluster: %w\", ErrCRDNotFound)"
+    },
+    {
+      "id": "PR1483-F1-e2e-not-gated",
+      "severity": "high",
+      "layer": "build",
+      "polarity": "contract",
+      "status": "STILL-BROKEN",
+      "claim": "test/e2e suite has no //go:build tag, so `go test ./...` includes it; BeforeSuite calls Fail() without a live cluster/binary. Only pkg/cli/integration_test.go is gated (//go:build integration).",
+      "tests": ["go test ./test/e2e/... (no setup)"],
+      "observed": "FAIL: [BeforeSuite] CRD directory not found: crds — run `make v2-e2e-setup` first; Ran 0 of 52 Specs; FAIL github.com/kubeflow/arena/test/e2e",
+      "proposedFix": "Add `//go:build v2e2e` (or reuse `integration`) to every test/e2e/*.go file and document the tag in the Makefile e2e targets."
+    },
+    {
+      "id": "PR1482-F2-delete-f-namespace",
+      "severity": "medium",
+      "layer": "unit/static",
+      "polarity": "contract",
+      "status": "FIXED",
+      "claim": "delete -f ignored the namespace declared in the YAML file.",
+      "tests": ["static: pkg/cli/delete.go + helpers.go resolveNS"],
+      "observed": "delete.go now sets yamlNS=t.Namespace and calls resolveNS(yamlNS); resolveNS implements flag > YAML > kubeconfig > default."
+    },
+    {
+      "id": "PR1480-mpi-log-selector",
+      "severity": "high-unconfirmed",
+      "layer": "unit+static",
+      "polarity": "canary",
+      "status": "UNCHANGED",
+      "claim": "MPI launcher log selector keys on replica-type=launcher; constants.LabelJobRole is defined but never used in production, suggesting the selector may have been intended to use job-role (standalone mpi-operator labels pods with training.kubeflow.org/job-role).",
+      "tests": ["pkg/provider -run TestVerify_PR1480_MPILogSelector_CurrentlyUsesReplicaType"],
+      "observed": "canary green: selector = training.kubeflow.org/job-name=myjob,training.kubeflow.org/replica-type=launcher; LabelJobRole unused. Needs operator-label confirmation before asserting a fix."
+    },
+    {
+      "id": "PR1478-F2-tensorboard-false",
+      "severity": "latent",
+      "layer": "unit",
+      "polarity": "contract",
+      "status": "STILL-PRESENT",
+      "claim": "tensorboard=false through ApplyOverrides materializes a non-nil TensorBoardConfig (API-level footgun; currently CLI-gated so not reachable via submit).",
+      "tests": ["pkg/task -run TestVerify_PR1478_TensorboardFalse_StaysNil"],
+      "observed": "FAIL: tensorboard=false produced &TensorBoardConfig{Enabled:false}"
+    },
+    {
+      "id": "PR1478-F5-negative-priority",
+      "severity": "latent",
+      "layer": "unit",
+      "polarity": "contract",
+      "status": "STILL-PRESENT",
+      "claim": "setInt(n>0) guard prevents applying a negative priority (legal for k8s signed int32 PriorityClass) and prevents lowering priority to 0.",
+      "tests": ["pkg/task -run TestVerify_PR1478_PriorityNegative_Applies"],
+      "observed": "FAIL: priority override to -100 dropped, stayed 50"
+    }
+  ]
+}
