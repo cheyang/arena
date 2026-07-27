@@ -1,0 +1,21 @@
+--- L1 skipped: pkg/task absent on this ref (v1 tree), Go layer not applicable ---
+--- L2 release workflow (F1488-1, F1488-2) ---
+=== F1488 checks against 93f63fc47b260046af66e28bd33cb5ef89cbef1c ===
+[F1488-2] workflow_dispatch trigger: present
+  FAIL: no branch guard. push is limited to master + paths:VERSION, but a manual
+        dispatch runs on whatever ref it is launched from and the release job uses
+        target_commitish: ${{ github.sha }}, so it would tag/publish from that ref.
+[F1488-1] push_tag creates the tag with a bare 'git tag -a'
+  FAIL: no existence guard. On a second dispatch 'git tag -a v$VERSION' aborts with
+        "fatal: tag already exists" (exit 128); draft_release needs push_tag so it is
+        skipped, while build-arena-image/release-image have already re-pushed
+        ghcr.io/kubeflow/arena:$VERSION. Net effect: the image is mutated and no
+        release is produced — exactly the re-release case the trigger was added for.
+[F1488-1] reproducing the git behaviour the step relies on:
+  first  'git tag -a v0.0.0' -> exit 0
+  second 'git tag -a v0.0.0' -> exit 128 (fatal: tag already exists)
+[F1488-1] VERSION on PR head = 0.15.5
+  tag v0.15.5 is NOT published upstream -> the first dispatch succeeds; the defect
+  bites on any subsequent one
+
+RESULT: F1488 findings STILL PRESENT

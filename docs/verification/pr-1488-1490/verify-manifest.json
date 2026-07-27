@@ -1,0 +1,130 @@
+{
+  "topic": "pr-1488-1490",
+  "prs": {
+    "1488": "https://github.com/kubeflow/arena/pull/1488",
+    "1489": "https://github.com/kubeflow/arena/pull/1489",
+    "1490": "https://github.com/kubeflow/arena/pull/1490"
+  },
+  "pr": "https://github.com/kubeflow/arena/pull/1490",
+  "author": "vicoooo26",
+  "round": 1,
+  "reviewedAt": "2026-07-27",
+  "heads": {
+    "1488": "93f63fc47b260046af66e28bd33cb5ef89cbef1c",
+    "1489": "030d6ea2711599b28f63383e5d237f3a3a9660d2",
+    "1490": "10a35bd4ebecbcb2165b1ea39bdb8c5d27f5a7b2"
+  },
+  "bases": {
+    "1488": "master",
+    "1489": "develop-v2 @ 56912af0",
+    "1490": "develop-v2 @ 56912af0"
+  },
+  "productionCodeTouched": false,
+  "reVerify": "bash docs/verification/pr-1488-1490/scripts/re-verify.sh",
+  "liveNote": "No live layer. The sandbox cluster is a shared Aliyun ACK v1.36 with no kind binary and no training-operator; creating clusters or installing CRDs there was deliberately avoided. F1490-1 was reproduced against that cluster only in the read-only sense (the BeforeSuite gate's kubectl get returns NotFound). To exercise the e2e suite for real, run `make v2-e2e-setup-cluster` on a throwaway kind host.",
+  "findings": [
+    {
+      "id": "F1490-1",
+      "pr": 1490,
+      "severity": "high",
+      "carryOverOf": "PR1483-F1",
+      "claim": "No file under test/e2e declares //go:build v2e2e, so `go test ./...` compiles the cluster-dependent Ginkgo suite and dies in BeforeSuite. #1490 adds a second Fail() (training-operator gate) which fires even after `make arena-v2`.",
+      "layer": "L1 + L2",
+      "polarity": "contract",
+      "tests": [
+        "test/verify/verify_test.go::TestVerify_F1490_1_E2EBuildTag",
+        "test/verify/verify_test.go::TestVerify_F1490_1_MakefileTagContract",
+        "scripts/re-verify.sh (go test ./... reproduction)"
+      ],
+      "status": "STILL-PRESENT",
+      "evidence": "results/pr-1490.log",
+      "proposedFix": "Add `//go:build v2e2e` as the first line of every test/e2e/*.go. The Makefile v2-e2e-test target must then pass -tags v2e2e (it currently does not on develop-v2)."
+    },
+    {
+      "id": "F1490-2",
+      "pr": 1490,
+      "severity": "medium",
+      "claim": "hack/e2e-setup-cluster.sh's INSTALL_METHOD=helm branch is unreachable: CHART_PATH defaults to charts/kubeflow-trainer but training-operator v1.9.3 ships no charts/ directory at all, so the branch always exits 1.",
+      "layer": "L2",
+      "polarity": "contract",
+      "tests": ["scripts/check-trainer-chart-path.sh"],
+      "status": "CONFIRMED",
+      "evidence": "results/pr-1490.log",
+      "proposedFix": "Drop the helm branch and the install_method input (KISS — the CI matrix only uses kustomize), or repoint CHART_PATH and pin a TRAINER_REF that actually ships the chart."
+    },
+    {
+      "id": "F1490-3",
+      "pr": 1490,
+      "severity": "medium",
+      "claim": "The BeforeSuite gate hardcodes deploy/training-operator in namespace \"kubeflow\" while the setup script exposes NAMESPACE, and the helm branch may name the Deployment after the release; a correctly provisioned non-default namespace is then rejected.",
+      "layer": "L2 (static)",
+      "polarity": "contract",
+      "tests": ["scripts/check-suite-gate-namespace.sh"],
+      "status": "CONFIRMED-BY-INSPECTION",
+      "evidence": "results/pr-1490.log",
+      "proposedFix": "Read the namespace (and ideally the deployment name) from an env var that the setup script also sets, or drop the gate and let the existing CRD check carry it."
+    },
+    {
+      "id": "F1489-1",
+      "pr": 1489,
+      "severity": "medium",
+      "claim": "docs/best-practices.md annotates both mount_path and shm as \"Optional\" with defaults, but task.Storage.Validate rejects an empty mount_path and there is no default shm size, so either omission fails to load. Corollary: pkg/provider/interface.go's SHM mount-path defaulting is unreachable via LoadFromFile, and pkg/provider/interface_test.go only passes because it bypasses Validate.",
+      "layer": "L1",
+      "polarity": "contract",
+      "tests": ["test/verify/verify_test.go::TestVerify_F1489_1_ShmOptionalFieldsHonored"],
+      "status": "CONFIRMED",
+      "evidence": "results/pr-1489.log",
+      "proposedFix": "Either drop the two \"Optional\" annotations from the doc, or relax Storage.Validate to allow an empty mount_path when SHM is set (and add a default size) so the provider's existing defaulting becomes reachable. Prefer the latter — the code already intends it and has a unit test for it.",
+      "agreesWith": "cheyang inline comment 3656988349"
+    },
+    {
+      "id": "F1489-3",
+      "pr": 1489,
+      "severity": "low",
+      "claim": "docs/cli-reference.md documents `arena job submit <type>` in four examples, but submitCmd is registered on the root command, so the nested form fails.",
+      "layer": "L1",
+      "polarity": "contract",
+      "tests": ["test/verify/verify_test.go::TestVerify_F1489_3_NoJobSubmitInDocs"],
+      "status": "CONFIRMED",
+      "evidence": "results/pr-1489.log",
+      "proposedFix": "Rewrite those examples as `arena submit <type>`.",
+      "agreesWith": "cheyang inline comment 3656988745"
+    },
+    {
+      "id": "F1489-R",
+      "pr": 1489,
+      "severity": "info",
+      "claim": "HYPOTHESIS NOT REPRODUCED — the 16 new reference/ and pretrain/ examples were suspected of being unvalidated-and-broken. All 20 examples/v2/**.yaml load cleanly. The residual gap is coverage, not correctness: examplesDir() was narrowed to examples/v2/quickstart, so 16 of the 20 are exercised by nothing.",
+      "layer": "L1",
+      "polarity": "regression",
+      "tests": ["test/verify/verify_test.go::TestVerify_F1489_R_AllExamplesLoad"],
+      "status": "NOT-REPRODUCED",
+      "evidence": "results/pr-1489.log",
+      "proposedFix": "Optional but cheap: walk examples/v2 recursively in the existing pkg/cli table test so new examples cannot rot. This test is the upstream-worthy part of the harness."
+    },
+    {
+      "id": "F1488-1",
+      "pr": 1488,
+      "severity": "medium",
+      "claim": "v0.15.5 is not published upstream (only v0.15.4), so the re-release motivation is real. But push_tag runs a bare `git tag -a v$VERSION && git push` with no existence guard, and draft_release needs push_tag, while build-arena-image/release-image have already re-pushed ghcr.io/kubeflow/arena:$VERSION. The advertised manual re-release therefore works exactly once; every later dispatch mutates the published image and then fails without producing a release.",
+      "layer": "L2",
+      "polarity": "contract",
+      "tests": ["scripts/check-release-workflow.sh"],
+      "status": "CONFIRMED",
+      "evidence": "results/pr-1488.log",
+      "proposedFix": "Make push_tag idempotent (skip when the tag exists, or `git tag -f` + `git push --force` if re-pointing is intended) and gate the image push the same way."
+    },
+    {
+      "id": "F1488-2",
+      "pr": 1488,
+      "severity": "low",
+      "claim": "workflow_dispatch is added with no branch guard while the push trigger is limited to master + paths:VERSION. A dispatch runs on whatever ref it is launched from and the release uses target_commitish: github.sha.",
+      "layer": "L2",
+      "polarity": "contract",
+      "tests": ["scripts/check-release-workflow.sh"],
+      "status": "CONFIRMED",
+      "evidence": "results/pr-1488.log",
+      "proposedFix": "Add `if: github.ref == 'refs/heads/master'` to the jobs, or guard at the workflow level."
+    }
+  ]
+}

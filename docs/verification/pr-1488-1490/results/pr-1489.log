@@ -1,0 +1,70 @@
+--- L1 go test ./test/verify/ ---
+=== RUN   TestVerify_F1490_1_E2EBuildTag
+    verify_test.go:77: F1490-1: 20 file(s) under test/e2e lack a //go:build v2e2e constraint: [check_test.go cli_overrides_test.go dryrun_test.go error_paths_test.go features_test.go format_test.go get_formats_test.go lifecycle_e2e_test.go logs_e2e_test.go mpi_test.go pytorch_test.go set_overrides_e2e_test.go storage_test.go submit_dryrun_test.go suite_test.go tensorboard_e2e_test.go tfjob_test.go top_e2e_test.go yaml_delete_test.go yaml_submit_test.go]
+          effect: `go test ./...` compiles and runs the e2e suite and fails in BeforeSuite
+          (suite_test.go Fail: "training-operator not found" / "arena-v2 binary not found").
+          CI only escapes this because `make v2-test` enumerates V2_PACKAGES instead of ./... .
+--- FAIL: TestVerify_F1490_1_E2EBuildTag (0.02s)
+=== RUN   TestVerify_F1490_1_MakefileTagContract
+    verify_test.go:93: Makefile does not reference the v2e2e tag on this ref
+--- SKIP: TestVerify_F1490_1_MakefileTagContract (0.00s)
+=== RUN   TestVerify_F1489_1_ShmOptionalFieldsHonored
+=== RUN   TestVerify_F1489_1_ShmOptionalFieldsHonored/omit_mount_path
+    verify_test.go:188: F1489-1: docs/best-practices.md marks "mount_path" Optional, but omitting it fails to load:
+          validation failed: storages: storage "shm": mountPath must not be empty
+=== RUN   TestVerify_F1489_1_ShmOptionalFieldsHonored/omit_shm
+    verify_test.go:188: F1489-1: docs/best-practices.md marks "shm" Optional, but omitting it fails to load:
+          validation failed: storages: storage "shm": must specify exactly one of pvc, shm, tmp, hostpath, configmap, or secret
+--- FAIL: TestVerify_F1489_1_ShmOptionalFieldsHonored (0.00s)
+    --- FAIL: TestVerify_F1489_1_ShmOptionalFieldsHonored/omit_mount_path (0.00s)
+    --- FAIL: TestVerify_F1489_1_ShmOptionalFieldsHonored/omit_shm (0.00s)
+=== RUN   TestVerify_F1489_3_NoJobSubmitInDocs
+    verify_test.go:240: F1489-3: docs document `arena job submit`, which is not a registered command (submit lives on the root): [docs/cli-reference.md:531 docs/cli-reference.md:535 docs/cli-reference.md:539 docs/cli-reference.md:543]
+--- FAIL: TestVerify_F1489_3_NoJobSubmitInDocs (0.01s)
+=== RUN   TestVerify_F1489_R_AllExamplesLoad
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/pretrain/deepspeed-bert.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/quickstart/mpi-simple.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/quickstart/pytorch-simple.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/quickstart/pytorch-standalone.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/quickstart/tensorflow-simple.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/mpi-horovod-elastic.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/mpi-horovod-mnist.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-elastic-echo.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-elastic-imagenet.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist-gloo.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist-mpi-backend.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist-nccl.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-smoke-test.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-tensorboard-mounts.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/tf-dist-mnist.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/tf-mnist-summaries.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/tf-multi-worker-gpu.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/tf-simple.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/tf-with-roles.yaml
+=== NAME  TestVerify_F1489_R_AllExamplesLoad
+    verify_test.go:296: validated 20 example YAML file(s) under examples/v2
+--- PASS: TestVerify_F1489_R_AllExamplesLoad (0.02s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/pretrain/deepspeed-bert.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/quickstart/mpi-simple.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/quickstart/pytorch-simple.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/quickstart/pytorch-standalone.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/quickstart/tensorflow-simple.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/mpi-horovod-elastic.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/mpi-horovod-mnist.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-elastic-echo.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-elastic-imagenet.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist-gloo.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist-mpi-backend.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist-nccl.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-smoke-test.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-tensorboard-mounts.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/tf-dist-mnist.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/tf-mnist-summaries.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/tf-multi-worker-gpu.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/tf-simple.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/tf-with-roles.yaml (0.00s)
+FAIL
+FAIL	github.com/kubeflow/arena/test/verify	0.124s
+FAIL
