@@ -65,6 +65,44 @@ but `task.Storage.Validate` rejects the input before the provider ever sees it, 
 code path is unreachable in production and its unit test only passes by constructing the
 struct directly. The doc describes what the code intends; validation forbids it.
 
+## Round 2 (2026-07-28) — #1489 head `8ae206ae`
+
+Author pushed `misc: update v2 docs and relax Validate()` after round 1. #1488 (`93f63fc4`)
+and #1490 (`10a35bd4`) are unchanged.
+
+**F1489-1 FIXED, and fixed the better way.** `pkg/task/types.go` now moves the mount-path
+check below the storage-type check and exempts SHM:
+
+```go
+if s.MountPath == "" && s.SHM == "" {
+    return fmt.Errorf("storage %q: mountPath must not be empty", s.Name)
+}
+```
+
+That makes the previously unreachable defaulting in `pkg/provider/interface.go` live. Verified
+end-to-end - a storage with `shm: 64Gi` and no `mount_path` now renders:
+
+```
+volumeMounts: [{"mountPath": "/dev/shm", "name": "shm"}]
+volumes    : [{"emptyDir": {"medium": "Memory", "sizeLimit": "64Gi"}, "name": "shm"}]
+```
+
+The doc was corrected in the same pass: `shm` is now marked **Required** rather than claiming a
+non-existent 2Gi default, and `mount_path` reads "Optional for shm". `pkg/task/types_test.go`
+gained coverage; `make v2-test`, `pkg/task` and `pkg/provider` all pass.
+
+**F1489-3 FIXED.** No `arena job submit` remains in docs/.
+
+**F1489-4 / F1489-5 FIXED** (cheyang's comments): README now states the rename to `arena`
+explicitly, and the version placeholders agree at `0.1.0`.
+
+**F1489-2 STILL OPEN** (cheyang comment `3656988564`): frameworks.md:274 still states
+deepspeed maps to the MPI provider and yields an MPIJob, while the example it links as
+"verified end-to-end", `examples/v2/pretrain/deepspeed-bert.yaml`, still sets
+`framework.name: pytorch`. The prose is the correct half; the example is mislabeled.
+
+**#1490 F1490-1 unchanged and still the only merge blocker in the set.**
+
 ## Layout
 
 ```
