@@ -139,6 +139,26 @@ YAML parses, and check-release-workflow.sh flips F1488-2 from FAIL to
 from "master's current version" to "any historical release branch's published image", so the
 two fixes should land together. Posted as reply `3663248002` on #1488.
 
+## #1489 MERGED (2026-07-28T02:26Z)
+
+Squash-merged to `develop-v2` as `09166694`, so the reviewed head `8ae206ae` is not an ancestor —
+the content landed, the hash did not. Confirmed on `upstream/develop-v2`:
+
+- F1489-1 fix present (`types.go`: `if s.MountPath == "" && s.SHM == ""`).
+- **F1489-2 shipped unfixed**: `examples/v2/pretrain/deepspeed-bert.yaml` still sets
+  `framework.name: pytorch` while `docs/frameworks.md` says deepspeed yields an MPIJob.
+  Now a follow-up against `develop-v2` rather than a PR comment.
+- F1490-1 unaffected: `test/e2e` on `develop-v2` still has zero `go:build` tags.
+
+`#1490` still merges cleanly onto the new `develop-v2` (0 conflict markers), so it does not need
+a rebase.
+
+**Stage 4 uplift rebased.** `test/examples-coverage` on `cheyang/arena` was branched off #1489's
+head, which a squash merge makes unrebaseable (replaying already-merged commits conflicts across
+every doc file). Rebuilt by cherry-picking the single test commit onto `upstream/develop-v2`:
+clean, 1 file / 79 insertions, `TestAllExamplesBuildCRD` and the full `make v2-test` both green.
+Ready to open as a PR; not opened yet.
+
 ## Layout
 
 ```
