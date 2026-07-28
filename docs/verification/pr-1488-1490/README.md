@@ -103,6 +103,42 @@ deepspeed maps to the MPI provider and yields an MPIJob, while the example it li
 
 **#1490 F1490-1 unchanged and still the only merge blocker in the set.**
 
+## #1488 follow-up (2026-07-28) — scoping the workflow_dispatch guard
+
+cheyang asked whether the guard should allow a develop branch and release branches as well as
+master. Checked against the actual upstream branch list rather than assumed:
+
+| branch | `release.yaml` | `VERSION` | dispatchable |
+|---|---|---|---|
+| `master` | yes | yes (`0.15.5`) | yes |
+| `release-0.12` | yes | yes (`0.12.0`) | yes |
+| `release-v0.6.0` | no (predates it) | yes (`0.5.0`) | no |
+| `develop-v2` | **no** | **no** | **no** |
+
+`develop-v2` cannot be a dispatch target at all: the workflow file is absent there so GitHub
+never lists it in the branch picker, `cat VERSION` would fail, and there is no
+`arena-installer` target. Putting it in the guard is dead configuration. Recommended condition
+is `master` + `release-*`.
+
+Bite-tested: the guard only needs to go on the two entry jobs, since the rest cascade.
+
+```
+package-arena-installer  needs=None                                     <- guard
+build-arena-image        needs=None                                     <- guard
+release-image            needs=[build-arena-image]                      skips
+push_tag                 needs=[package-arena-installer, release-image] skips
+draft_release            needs=[push_tag]                               skips
+```
+
+YAML parses, and check-release-workflow.sh flips F1488-2 from FAIL to
+"OK: a branch guard is present". F1488-1 correctly still reports FAIL (independent finding).
+
+**Non-obvious consequence:** widening to `release-*` makes F1488-1 MORE important, not less.
+`release-0.12` carries `VERSION=0.12.0`, so a dispatch from there would overwrite
+`ghcr.io/kubeflow/arena:0.12.0` and then die at `git tag -a v0.12.0`. The blast radius grows
+from "master's current version" to "any historical release branch's published image", so the
+two fixes should land together. Posted as reply `3663248002` on #1488.
+
 ## Layout
 
 ```
