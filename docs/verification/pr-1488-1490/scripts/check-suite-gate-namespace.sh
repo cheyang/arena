@@ -18,8 +18,11 @@ fi
 grep -n 'deploy/training-operator' "$SUITE" | sed 's/^/  gate: /'
 
 fail=0
-if grep -qE '"kubeflow"' "$SUITE"; then
-  echo "  gate namespace is the literal \"kubeflow\""
+# Only the kubectl invocation matters. A literal "kubeflow" elsewhere in the file
+# is fine once it is merely the fallback for an env-sourced variable.
+GATE_LINE=$(grep -n 'deploy/training-operator' "$SUITE" | head -1)
+if printf '%s' "$GATE_LINE" | grep -qE '"-n", *"kubeflow"'; then
+  echo "  gate namespace is hardcoded on the kubectl call"
   if [ -f "$SETUP" ] && grep -q 'NAMESPACE=' "$SETUP"; then
     echo "  FAIL: $SETUP makes the namespace configurable (NAMESPACE=\${NAMESPACE:-kubeflow})"
     echo "        but the gate ignores it, so NAMESPACE=<other> provisions a working cluster"
@@ -27,6 +30,15 @@ if grep -qE '"kubeflow"' "$SUITE"; then
     fail=1
   fi
 fi
+if printf '%s' "$GATE_LINE" | grep -qE '"-n", *[a-zA-Z_][a-zA-Z0-9_]*\)?$|"-n", *[a-zA-Z_][a-zA-Z0-9_]*,'; then
+  if grep -qE 'os\.Getenv\("NAMESPACE"\)' "$SUITE"; then
+    echo "  gate reads NAMESPACE from the environment with a kubeflow fallback -- agrees with $SETUP"
+  else
+    echo "  gate uses a variable, but it is not sourced from NAMESPACE -- check by hand"
+    fail=1
+  fi
+fi
+
 if [ -f "$SETUP" ] && grep -q 'helm install training-operator' "$SETUP"; then
   if ! grep -qE 'kubectl wait.*deploy' "$SETUP" || \
      ! awk '/helm\)/,/;;/' "$SETUP" | grep -q 'kubectl wait'; then

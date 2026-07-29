@@ -1,70 +1,72 @@
 --- L1 go test ./test/verify/ ---
 === RUN   TestVerify_F1490_1_E2EBuildTag
-    verify_test.go:77: F1490-1: 20 file(s) under test/e2e lack a //go:build v2e2e constraint: [check_test.go cli_overrides_test.go dryrun_test.go error_paths_test.go features_test.go format_test.go get_formats_test.go lifecycle_e2e_test.go logs_e2e_test.go mpi_test.go pytorch_test.go set_overrides_e2e_test.go storage_test.go submit_dryrun_test.go suite_test.go tensorboard_e2e_test.go tfjob_test.go top_e2e_test.go yaml_delete_test.go yaml_submit_test.go]
-          effect: `go test ./...` compiles and runs the e2e suite and fails in BeforeSuite
-          (suite_test.go Fail: "training-operator not found" / "arena-v2 binary not found").
-          CI only escapes this because `make v2-test` enumerates V2_PACKAGES instead of ./... .
---- FAIL: TestVerify_F1490_1_E2EBuildTag (0.03s)
+--- PASS: TestVerify_F1490_1_E2EBuildTag (0.02s)
 === RUN   TestVerify_F1490_1_MakefileTagContract
-    verify_test.go:93: Makefile does not reference the v2e2e tag on this ref
---- SKIP: TestVerify_F1490_1_MakefileTagContract (0.00s)
+--- PASS: TestVerify_F1490_1_MakefileTagContract (0.00s)
 === RUN   TestVerify_F1489_1_ShmOptionalFieldsHonored
-    verify_test.go:155: docs/best-practices.md not present on this ref (open /tmp/arena-verify-eMaPJW/pr-1490/docs/best-practices.md: no such file or directory) — not applicable here
---- SKIP: TestVerify_F1489_1_ShmOptionalFieldsHonored (0.00s)
+=== RUN   TestVerify_F1489_1_ShmOptionalFieldsHonored/omit_mount_path
+--- PASS: TestVerify_F1489_1_ShmOptionalFieldsHonored (0.00s)
+    --- PASS: TestVerify_F1489_1_ShmOptionalFieldsHonored/omit_mount_path (0.00s)
 === RUN   TestVerify_F1489_3_NoJobSubmitInDocs
-    verify_test.go:208: docs/ not present on this ref: stat /tmp/arena-verify-eMaPJW/pr-1490/docs: no such file or directory
---- SKIP: TestVerify_F1489_3_NoJobSubmitInDocs (0.00s)
+--- PASS: TestVerify_F1489_3_NoJobSubmitInDocs (0.01s)
 === RUN   TestVerify_F1489_R_AllExamplesLoad
-=== RUN   TestVerify_F1489_R_AllExamplesLoad/mpi-simple.yaml
-=== RUN   TestVerify_F1489_R_AllExamplesLoad/mpi-with-launcher.yaml
-=== RUN   TestVerify_F1489_R_AllExamplesLoad/pytorch-simple.yaml
-=== RUN   TestVerify_F1489_R_AllExamplesLoad/pytorch-standalone.yaml
-=== RUN   TestVerify_F1489_R_AllExamplesLoad/pytorch-tensorboard-mounts.yaml
-=== RUN   TestVerify_F1489_R_AllExamplesLoad/pytorch-with-master.yaml
-=== RUN   TestVerify_F1489_R_AllExamplesLoad/tensorflow-simple.yaml
-=== RUN   TestVerify_F1489_R_AllExamplesLoad/tf-with-roles.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/pretrain/deepspeed-bert.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/quickstart/mpi-simple.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/quickstart/pytorch-simple.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/quickstart/pytorch-standalone.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/quickstart/tensorflow-simple.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/mpi-horovod-elastic.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/mpi-horovod-mnist.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-elastic-echo.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-elastic-imagenet.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist-gloo.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist-mpi-backend.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist-nccl.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-smoke-test.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-tensorboard-mounts.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/tf-dist-mnist.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/tf-mnist-summaries.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/tf-multi-worker-gpu.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/tf-simple.yaml
+=== RUN   TestVerify_F1489_R_AllExamplesLoad/reference/tf-with-roles.yaml
 === NAME  TestVerify_F1489_R_AllExamplesLoad
-    verify_test.go:296: validated 8 example YAML file(s) under examples/v2
---- PASS: TestVerify_F1489_R_AllExamplesLoad (0.01s)
-    --- PASS: TestVerify_F1489_R_AllExamplesLoad/mpi-simple.yaml (0.00s)
-    --- PASS: TestVerify_F1489_R_AllExamplesLoad/mpi-with-launcher.yaml (0.00s)
-    --- PASS: TestVerify_F1489_R_AllExamplesLoad/pytorch-simple.yaml (0.00s)
-    --- PASS: TestVerify_F1489_R_AllExamplesLoad/pytorch-standalone.yaml (0.00s)
-    --- PASS: TestVerify_F1489_R_AllExamplesLoad/pytorch-tensorboard-mounts.yaml (0.00s)
-    --- PASS: TestVerify_F1489_R_AllExamplesLoad/pytorch-with-master.yaml (0.00s)
-    --- PASS: TestVerify_F1489_R_AllExamplesLoad/tensorflow-simple.yaml (0.00s)
-    --- PASS: TestVerify_F1489_R_AllExamplesLoad/tf-with-roles.yaml (0.00s)
-FAIL
-FAIL	github.com/kubeflow/arena/test/verify	0.124s
-FAIL
+    verify_test.go:296: validated 20 example YAML file(s) under examples/v2
+--- PASS: TestVerify_F1489_R_AllExamplesLoad (0.02s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/pretrain/deepspeed-bert.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/quickstart/mpi-simple.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/quickstart/pytorch-simple.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/quickstart/pytorch-standalone.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/quickstart/tensorflow-simple.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/mpi-horovod-elastic.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/mpi-horovod-mnist.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-elastic-echo.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-elastic-imagenet.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist-gloo.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist-mpi-backend.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist-nccl.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-mnist.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-smoke-test.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/pytorch-tensorboard-mounts.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/tf-dist-mnist.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/tf-mnist-summaries.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/tf-multi-worker-gpu.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/tf-simple.yaml (0.00s)
+    --- PASS: TestVerify_F1489_R_AllExamplesLoad/reference/tf-with-roles.yaml (0.00s)
+PASS
+ok  	github.com/kubeflow/arena/test/verify	0.183s
 --- L2 trainer chart path (F1490-2) ---
 === F1490-2: helm path reachability ===
 TRAINER_REPO=https://github.com/kubeflow/training-operator.git
 TRAINER_REF =v1.9.3
-CHART_PATH  =charts/kubeflow-trainer
-  charts/ dir at v1.9.3: <absent>
-RESULT: chart charts/kubeflow-trainer does NOT exist at v1.9.3.
-        INSTALL_METHOD=helm always exits 1 with the script's own
-        'may not include helm charts' error, so the branch (and the
-        install_method input advertised by the composite action) is dead.
-        Either repoint CHART_PATH / pin a ref that ships charts, or drop the branch.
+CHART_PATH  =
+RESULT: chart  EXISTS at v1.9.3 — helm path is reachable (FIXED)
 --- L2 suite gate namespace (F1490-3) ---
 === F1490-3: setup/gate namespace agreement ===
-  gate: 29:	cmd := exec.Command("kubectl", "get", "deploy/training-operator", "-n", "kubeflow")
+  gate: 35:	cmd := exec.Command("kubectl", "get", "deploy/training-operator", "-n", operatorNamespace)
   gate namespace is the literal "kubeflow"
   FAIL: hack/e2e-setup-cluster.sh makes the namespace configurable (NAMESPACE=${NAMESPACE:-kubeflow})
         but the gate ignores it, so NAMESPACE=<other> provisions a working cluster
         that the suite then refuses to run against.
-  NOTE: the kustomize branch waits for deploy/training-operator; the helm branch
-        relies on 'helm --wait' only, and the chart may name the Deployment after
-        the release, so the gate's fixed name is not guaranteed there either.
 RESULT: F1490-3 STILL PRESENT
 --- L2 go test ./... reproduction (F1490-1) ---
-[38;5;9m[BeforeSuite] [FAILED] [0.571 seconds][0m
-[38;5;9m[1m[BeforeSuite] [0m
-  [38;5;9m[FAILED] training-operator not found in kubeflow namespace — run `make v2-e2e-setup-cluster` first[0m
-  [38;5;9mIn [1m[BeforeSuite][0m[38;5;9m at: [1m/tmp/arena-verify-eMaPJW/pr-1490/test/e2e/suite_test.go:31[0m [38;5;243m@ 07/27/26 22:04:37.63[0m
-  [38;5;9m[FAIL][0m [38;5;9m[1m[BeforeSuite] [0m
-[38;5;9m[1mFAIL![0m -- [38;5;14m[1mA BeforeSuite node failed so all tests were skipped.[0m
-FAIL	github.com/kubeflow/arena/test/e2e	1.164s
-          effect: `go test ./...` compiles and runs the e2e suite and fails in BeforeSuite

@@ -159,6 +159,52 @@ every doc file). Rebuilt by cherry-picking the single test commit onto `upstream
 clean, 1 file / 79 insertions, `TestAllExamplesBuildCRD` and the full `make v2-test` both green.
 Ready to open as a PR; not opened yet.
 
+## FINAL — all three PRs merged (2026-07-28 / 07-29)
+
+| PR | merged | merged head | mainline commit |
+|---|---|---|---|
+| #1489 | 2026-07-28T02:26Z | `8ae206ae` | `09166694` on develop-v2 |
+| #1488 | 2026-07-28T13:36Z | `46fa8c61` | `e30882c1` on master |
+| #1490 | 2026-07-29T01:55Z | `d7fd081f` | `e08d7903` on develop-v2 |
+
+Both #1488 and #1490 moved before merging and the moves were the fixes.
+
+### Verdicts
+
+| Finding | Verdict |
+|---|---|
+| **F1490-1** (high, the merge blocker) | **FIXED** — all 20 `test/e2e/*.go` declare `//go:build v2e2e` AND `v2-e2e-test` now runs `go test -tags v2e2e ./test/e2e/`. Exactly the paired change the bite test called for. |
+| **F1490-2** | **FIXED by removal** — `CHART_PATH` is gone; the `helm)` arm now errors with "INSTALL_METHOD=helm is not currently supported" and points at kustomize. The dead install attempt is gone rather than papered over. |
+| **F1490-3** | **FIXED** — `operatorNamespace := os.Getenv("NAMESPACE")` with a `kubeflow` fallback, used in both the `kubectl` call and the Fail message. |
+| **F1488-1 + F1488-2** | **FIXED, more thoroughly than proposed** — a new `check_tag` job runs `git ls-remote --tags`, and both entry jobs carry `if: needs.check_tag.outputs.exists != 'true' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release-'))`. `push_tag` re-checks before tagging. Gating the *image push* on tag absence — not just the tag step — is what actually closes the "image mutated, then abort" hole; the recommendation only asked for the tag guard. |
+| **F1489-1 / F1489-3 / F1489-4 / F1489-5** | **FIXED** (see round 2). |
+| **F1489-R** | regression guard still GREEN. |
+| **F1489-2** | **STILL OPEN on develop-v2** — `examples/v2/pretrain/deepspeed-bert.yaml` remains `framework.name: pytorch` while `docs/frameworks.md:274` says deepspeed yields an MPIJob. Only surviving finding; needs a follow-up PR, no longer commentable. |
+
+Two non-blocking notes from the #1490 summary were also acted on: `Describe("Logs", ...)` is no
+longer `Pending`, so the strengthened assertions actually execute, and `kind_load_image()` now
+pre-loads both busybox and the extracted training-operator image to dodge docker.io rate limits.
+
+### Harness updates (the fixes changed the code shape)
+
+Two L2 checks were judging stale shapes and were corrected, then re-bite-tested at `10a35bd4`
+(old, must FAIL) and `develop-v2` (fixed, must PASS) — both behave correctly now:
+
+- `check-trainer-chart-path.sh` reported FIXED for the *wrong reason*: with `CHART_PATH` deleted
+  it ran `test -d "$D/"`, which resolves to the clone root and always succeeds. Now it detects a
+  "not supported" helm arm as a legitimate removal and refuses to evaluate an empty `CHART_PATH`.
+- `check-suite-gate-namespace.sh` reported STILL PRESENT falsely: it grepped the whole file for a
+  literal `"kubeflow"`, which now appears only as the env fallback. It now inspects the `kubectl`
+  invocation line and accepts an `os.Getenv("NAMESPACE")`-sourced variable.
+
+### Not reviewed by this harness
+
+**#1491** ("chores: add arena v2 release workflow", merged 2026-07-28T13:56Z, +419/-10 across 15
+files) added `.goreleaser.yaml`, `tag-release.yaml`, `goreleaser.yaml`, issue templates and a
+labeler. It was approved by cheyang directly and never entered this pipeline, so none of it is
+covered by these findings — notably the new v2 tag/release path, which is the same class of
+machinery F1488-1 was about.
+
 ## Layout
 
 ```

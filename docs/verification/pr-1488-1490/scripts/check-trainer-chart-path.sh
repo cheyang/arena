@@ -29,6 +29,23 @@ if ! grep -q 'INSTALL_METHOD' "$SCRIPT" || ! grep -q 'helm)' "$SCRIPT"; then
   exit 0
 fi
 
+# The helm arm may still exist but only to reject the option outright. That is a
+# valid resolution (the dead code is gone), so treat it as fixed rather than
+# cloning the trainer repo to check a chart path that no longer exists.
+if awk '/^  helm\)/,/;;/' "$SCRIPT" | grep -qiE 'not (currently )?supported|not implemented'; then
+  echo "RESULT: the helm arm now rejects INSTALL_METHOD=helm explicitly"
+  echo "        (no CHART_PATH, no unreachable install attempt) -- FIXED by removal."
+  exit 0
+fi
+
+# Guard against a false pass: an empty CHART_PATH would make the -d test below
+# resolve to the clone root and always succeed.
+if [ -z "$CHART" ]; then
+  echo "RESULT: helm arm present but CHART_PATH is unset -- cannot evaluate."
+  echo "        HARNESS-UPDATE: re-read the script, the variable was renamed or removed."
+  exit 1
+fi
+
 D=$(mktemp -d)
 trap 'rm -rf "$D"' EXIT
 git -c advice.detachedHead=false clone -q --depth 1 --branch "$REF" "$REPO" "$D"
